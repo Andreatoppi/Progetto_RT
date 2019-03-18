@@ -14,11 +14,11 @@ int main(){
 
     install_keyboard(); //supporto tastiera
     install_mouse();    //supporto mouse
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640, 480, 0, 0);  //
-    show_mouse(screen);
+    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640, 480, 0, 0);  //opening window
+    show_mouse(screen); //show mouse pointer
 
     do {
-        if (mouse_b == 0) {
+        if (mouse_b == 0) {     //Print dei pixel in base al tasto schiacciato
         x = mouse_x;
         y = mouse_y;
         scare_mouse();
@@ -32,15 +32,8 @@ int main(){
         putpixel(screen, x, y, 100);
         unscare_mouse();
         }
-        if (mouse_b == 2) {
-        x = mouse_x;
-        y = mouse_y;
-        scare_mouse();
-        putpixel(screen, x, y, 0);
-        unscare_mouse();
-        }
-    } while (!key[KEY_ESC]);
+    } while (!key[KEY_ESC]);    //chiusura della windows al tasto ESC
 
-    allegro_exit();
+    allegro_exit();     //Uscita Allegro
     return 0;
 }
