@@ -8,13 +8,13 @@
 
 int main(){
 
-    allegro_init();
-    int col = 14;
-    int x, y;
+    allegro_init();     //inizializzazione Allegro strutture dati
+    int col = 14;       //colore sfondo
+    int x, y;           //valori posizione
 
-    install_keyboard();
-    install_mouse();
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640, 480, 0, 0);
+    install_keyboard(); //supporto tastiera
+    install_mouse();    //supporto mouse
+    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640, 480, 0, 0);  //
     show_mouse(screen);
 
     do {
