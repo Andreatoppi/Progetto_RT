@@ -32,6 +32,7 @@ int main(){
         textout_ex(screen, font, &scan, 300, 200, 12, -1);
 
         i++;
+        //viaoooooooooooooooo
     } while (!key[KEY_ENTER]);
 
     allegro_exit();
