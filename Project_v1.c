@@ -21,21 +21,30 @@ void init(void){
     show_mouse(screen);
 }
 
-void create_tank(){
-    rectfill(screen, 200, 100, 400, 400, 255);
+void create_tank(BITMAP *b){
+    rectfill(b, 200, 100, 400, 400, 255);
 }
 
 
-void create_button(){
-    circle(screen, 100, 200, 50, 255);
-    textout_centre_ex(screen, font, "Open", 100, 198, 255, -1);
+void create_button(BITMAP *b){
+    circle(b, 100, 200, 50, 255);
+    textout_centre_ex(b, font, "Open", 100, 198, 255, -1);
 }
 
 int main(){
 
-    init();
-    create_tank();
-    create_button();
+    BITMAP *buffer;
+    int w = 100;
+    int h = 100;
+
+    buffer = create_bitmap(w, h);
+    clear_bitmap(buffer);
+    clear_to_color(buffer, 13);
+    
+    // init();
+    create_tank(buffer);
+    create_button(buffer);
+    
     do{
 
     }
