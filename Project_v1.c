@@ -8,23 +8,25 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define XWIN 640    //window x resolution
-#define YWIN 480    //window y resolution
-#define BKG 0       //background color
-#define SMIN 0      //min sensor distance
-#define SMAX 300    //max sensor distance
-#define SSTEP 1     //sensor precision
+#define XWIN    640 //window x resolution
+#define YWIN    480 //window y resolution
+#define BKG     0   //background color
+#define SMIN    0   //min sensor distance
+#define SMAX    300 //max sensor distance
+#define SSTEP   1   //sensor precision
+#define BLUE    11  //colors
+#define WHITE   15
 
 int desired_level = 100;
 
 struct tank_t {                 //tank data structure
     pthread_mutex_t mutex;
-    pthread_cond_t C_f, C_t;
+    pthread_cond_t  C_f, C_t;
     int level;
-    bool tap;
     int x1, y1, x2, y2, h, w, color;
     int sensor;
-}tank;
+    bool    tap;
+} tank;
 
 void init_tank_t (struct tank_t *t){            //tank inizialization
 
@@ -62,7 +64,7 @@ void create_button(){
 }
 
 int read_sensor(struct tank_t *t){       //sensor
-    int c=0;        // pixel value
+    int c = 0;        // pixel value
     int x, y;       // sensor coordinates
     int d = SMIN;   // min sensor distance
 
@@ -71,7 +73,8 @@ int read_sensor(struct tank_t *t){       //sensor
         y = 101 + d;
         c = getpixel(screen, x, y); //get pixel color
         d = d + SSTEP;
-    }while(c == 255);
+    }while (c == WHITE);
+
     return d-1;
 }
 
@@ -86,6 +89,7 @@ void check_tap(struct tank_t *t){                   //if tap is hold unlock "emp
         t->tap = TRUE;
     else 
         t->tap = FALSE;
+
     if (t->tap && t->level>0)
         pthread_cond_signal(&t->C_t);
     }
@@ -96,35 +100,42 @@ int get_level(struct tank_t *t){                    //measure the level of liqui
 
 void fill_pixel(struct tank_t *t){
     for (int j=t->x1;j<t->x2+1;j++)
-        putpixel(screen, j, t->y2-t->level, 11);    //color line by line in blue
+        putpixel(screen, j, t->y2-t->level, BLUE);    //color line by line in blue
 }
 
 void empty_pixel(struct tank_t *t){
     for (int j=t->x1;j<t->x2+1;j++)
-        putpixel(screen, j, t->y2-t->level, 15);   //color line by line in white
+        putpixel(screen, j, t->y2-t->level, WHITE);   //color line by line in white
 }
 
 void *th_tap(void *arg){            //thread that manage the tap task
     struct tank_t *t = &tank;
+
     while (1){
         // sleep (1);
         pthread_mutex_lock (&t->mutex);
+        
         while (!t->tap)             //lock il tap is not click
             pthread_cond_wait (&t->C_t, &t->mutex);
+        
         if (t->level>=0){
             empty_pixel(t);         //if tank is not empty do it
-            t->level--;}
+            t->level--;
+        }
         pthread_mutex_unlock (&t->mutex);
     }
 }
 
 void *th_filler(void *arg){         //thread that manage fill task
     struct tank_t *t = &tank;
+
     while(1){
         // sleep(1);
         pthread_mutex_lock (&t->mutex);
+        
         while(t->level > desired_level-1)       //if level is higher i'm not refill
             pthread_cond_wait(&t->C_f, &t->mutex);
+
         fill_pixel(t);      //refill
         t->level++;
         pthread_mutex_unlock (&t->mutex);
@@ -133,20 +144,20 @@ void *th_filler(void *arg){         //thread that manage fill task
 
 void *th_tank (void *arg){      //task tank to check the status of tank
     struct tank_t *t = &tank;
+    
     while(1){
         // sleep(1);
         pthread_mutex_lock (&t->mutex);                 
-        
         check_level (t);        //check liquid level
         check_tap (t);          //check if the tap is hold
-        // printf("livello: %d\n", get_level(t));
-
+        // printf("livello: %d\n", get_level(t))
         pthread_mutex_unlock (&t->mutex);
     }
 }
 
 void *th_sensor (void *args){       //sensor task to evaluate quantity of liquid
     struct tank_t *t = &tank;
+    
     while(1){
         sleep(1/2);
         pthread_mutex_lock(&t->mutex);
@@ -157,13 +168,13 @@ void *th_sensor (void *args){       //sensor task to evaluate quantity of liquid
 }
 
 int main(){
+    pthread_t tank, filler, tap, sensor;
+
     init_allegro();
     init_tank_t(&tank);      //init della struct
 
     create_tank(&tank);
     create_button();
-
-    pthread_t tank, filler, tap, sensor;
 
     pthread_create (&tank, NULL, th_tank, NULL);
     pthread_create (&filler, NULL, th_filler, NULL);
