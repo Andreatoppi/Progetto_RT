@@ -26,7 +26,7 @@ struct tank_t {                 //tank data structure
     int x1, y1, x2, y2, h, w, color;
     int sensor;
     bool    tap;
-} tank;
+}tank;
 
 void init_tank_t (struct tank_t *t){            //tank inizialization
 
@@ -168,13 +168,13 @@ void *th_sensor (void *args){       //sensor task to evaluate quantity of liquid
 }
 
 int main(){
-    pthread_t tank, filler, tap, sensor;
-
     init_allegro();
     init_tank_t(&tank);      //init della struct
 
     create_tank(&tank);
     create_button();
+
+    pthread_t tank, filler, tap, sensor;
 
     pthread_create (&tank, NULL, th_tank, NULL);
     pthread_create (&filler, NULL, th_filler, NULL);
