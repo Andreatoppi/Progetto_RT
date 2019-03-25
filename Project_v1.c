@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdbool.h>
 
 #define XWIN 640    //window x resolution
 #define YWIN 480    //window y resolution
@@ -14,8 +15,9 @@ int desired_level = 10;
 
 struct tank_t {
     pthread_mutex_t mutex;
-    pthread_cond_t C_f;
+    pthread_cond_t C_f, C_t;
     int level;
+    bool tap;
 
 }tank;
 
@@ -23,7 +25,9 @@ void init_tank_t (struct tank_t *t){
 
     pthread_mutex_init (&t->mutex, NULL);       //inizializzo il mutex al valore di default 1
     pthread_cond_init (&t->C_f, NULL);
+    pthread_cond_init (&t->C_t, NULL);
     t->level = 0;
+    t->tap = FALSE;
 }
 
 //init of allegro
@@ -47,6 +51,38 @@ void create_button(){
     textout_centre_ex(screen, font, "Open", 100, 198, 255, -1);
 }
 
+void check_level(struct tank_t *t){
+    if (t->level < desired_level-1){
+        pthread_cond_signal(&t->C_f);
+        }
+}
+
+void check_tap(struct tank_t *t){
+    if (mouse_b == 1)
+        t->tap = TRUE;
+    else 
+        t->tap = FALSE;
+    if (t->tap && t->level>0)
+        pthread_cond_signal(&t->C_t);
+    }
+
+int get_level(struct tank_t *t){
+    return t->level;
+}
+
+void *th_tap(void *arg){
+    struct tank_t *t = &tank;
+    while (1){
+        // sleep (1);
+        pthread_mutex_lock (&t->mutex);
+        while (!t->tap)
+            pthread_cond_wait (&t->C_t, &t->mutex);
+        if (t->level>0)
+            t->level--;
+        pthread_mutex_unlock (&t->mutex);
+    }
+}
+
 void *th_filler(void *arg){
     struct tank_t *t = &tank;
     while(1){
@@ -59,16 +95,6 @@ void *th_filler(void *arg){
     }    
 }
 
-void check_level(struct tank_t *t){
-    if (t->level < desired_level-1){
-        pthread_cond_signal(&t->C_f);
-        }
-}
-
-int get_level(struct tank_t *t){
-    return t->level;
-}
-
 void *th_tank (void *arg){
     struct tank_t *t = &tank;
     int level;
@@ -77,8 +103,9 @@ void *th_tank (void *arg){
         pthread_mutex_lock (&t->mutex);                 
         
         check_level (&tank);
-        level = get_level(t);
-        printf("livello: %d\n",level);
+        check_tap (&tank);
+        // level = get_level(t);
+        printf("livello: %d\n",get_level(t));
 
         pthread_mutex_unlock (&t->mutex);
     }
@@ -94,9 +121,11 @@ int main(){
 
     pthread_t tank;
     pthread_t filler;
+    pthread_t tap;
 
     pthread_create (&tank, NULL, th_tank, NULL);
     pthread_create (&filler, NULL, th_filler, NULL);
+    pthread_create (&tap, NULL, th_tap, NULL);
 
     srand(time(NULL));      //funzione di appoggio per numeri random
     
@@ -107,6 +136,7 @@ int main(){
 
     pthread_join (tank, NULL);
     pthread_join (filler, NULL);
+    pthread_join (tap, NULL);
 
     allegro_exit();
     return 0;
