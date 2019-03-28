@@ -83,7 +83,7 @@ void update_level(struct tank_t *t){
 }
 
 void check_level(struct tank_t *t){                 //unlock the "refiller" if the level il low
-    if (t->level < desired_level-1){
+    if (t->level < desired_level){
         pthread_cond_signal(&t->C_f);
         }
 }
@@ -117,7 +117,7 @@ void *th_tap(void *arg){            //thread that manage the tap task
     struct tank_t *t = &tank;
 
     while (1){
-        // sleep (1); 
+        usleep (500); 
         pthread_mutex_lock (&t->mutex);
         
         while (!t->tap)             //lock il tap is not click
@@ -136,7 +136,7 @@ void *th_filler(void *arg){         //thread that manage fill task
     struct tank_t *t = &tank;
 
     while(1){
-        sleep(1);
+        usleep(1000);
         pthread_mutex_lock (&t->mutex);
         
         while(t->level > desired_level-1)       //if level is higher i'm not refill
