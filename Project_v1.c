@@ -8,18 +8,24 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define XWIN    640 //window x resolution
-#define YWIN    480 //window y resolution
-#define BKG     0   //background color
-#define SMIN    0   //min sensor distance
-#define SMAX    300 //max sensor distance
-#define SSTEP   1   //sensor precision
-#define BLUE    11  //colors
-#define WHITE   15
+#define XWIN        640 // window x resolution
+#define YWIN        480 // window y resolution
+#define BKG         0   // background color
+#define X0          300 // x position of sensor
+#define Y0          100 // y position of sensor
+#define SMIN        0   // min sensor distance
+#define SMAX        300 // max sensor distance
+#define SSTEP       1   // sensor precision
+#define BLUE        11  // VGA code of blue
+#define WHITE       15  // VGA code of white
+#define MAXLEVEL    300 // max quantity of liquid in tank
+#define MINLEVEL    0   // min quantity of liquid in tank
+#define HTANK       300 // tank hight
+#define WTANK       200 // tank width
 
 int desired_level = 200;
 
-struct tank_t {                 //tank data structure
+struct tank_t {     //tank data structure
     pthread_mutex_t mutex;
     pthread_cond_t  C_f, C_t;
     int level;
@@ -28,20 +34,20 @@ struct tank_t {                 //tank data structure
     bool    tap;
 }tank;
 
-void init_tank_t (struct tank_t *t){            //tank inizialization
+void init_tank_t(struct tank_t *t){        //tank inizialization
 
-    pthread_mutex_init (&t->mutex, NULL);       //mutex and condition variable init
-    pthread_cond_init (&t->C_f, NULL);
-    pthread_cond_init (&t->C_t, NULL);
-    t->level = 0;
-    t->tap = FALSE;
+    pthread_mutex_init(&t->mutex, NULL);   //mutex and condition variable init
+    pthread_cond_init(&t->C_f, NULL);
+    pthread_cond_init(&t->C_t, NULL);
+    t->level = MINLEVEL;
+    t->tap  = FALSE;
     t->x1 = 200;
     t->y1 = 100;
     t->x2 = t->y2 = 400;
-    t->h = 300;
-    t->w = 200;
-    t->color = 15;
-    t->sensor = 0;
+    t->h = HTANK;
+    t->w = WTANK;
+    t->color = WHITE;
+    t->sensor = SMIN;
 }
 
 //init of allegro
@@ -63,15 +69,14 @@ void create_button(){
     textout_centre_ex(screen, font, "Open", 100, 198, 255, -1);
 }
 
-void read_sensor(struct tank_t *t){       //sensor
-    int c = 0;        // pixel value
-    int x, y;       // sensor coordinates
-    int d = SMIN;   // min sensor distance
+void read_sensor(struct tank_t *t){     //sensor
+    int c = 0;                          // pixel value
+    int y = Y0;                         // sensor coordinates
+    int d = SMIN;                       // min sensor distance
 
     do{
-        x = 300;
-        y = 100 + d;
-        c = getpixel(screen, x, y); //get pixel color
+        y = Y0 + d;
+        c = getpixel(screen, X0, y);    //get pixel color
         d = d + SSTEP;
     }while (c == WHITE);
     t->sensor = d-2; 
@@ -79,16 +84,16 @@ void read_sensor(struct tank_t *t){       //sensor
 
 void update_level(struct tank_t *t){
     read_sensor(t);
-    t->level = 300 - t->sensor;
+    t->level = MAXLEVEL - t->sensor;
 }
 
-void check_level(struct tank_t *t){                 //unlock the "refiller" if the level il low
+void check_level(struct tank_t *t){     //unlock the "refiller" if the level il low
     if (t->level < desired_level){
         pthread_cond_signal(&t->C_f);
         }
 }
 
-void check_tap(struct tank_t *t){                   //if tap is hold unlock "emptier"
+void check_tap(struct tank_t *t){       //if tap is hold unlock "emptier"
     if (mouse_b == 1)
         t->tap = TRUE;
     else 
@@ -98,77 +103,77 @@ void check_tap(struct tank_t *t){                   //if tap is hold unlock "emp
         pthread_cond_signal(&t->C_t);
     }
 
-int get_level(struct tank_t *t){                    //measure the level of liquid
+int get_level(struct tank_t *t){        //measure the level of liquid
     update_level(t);
     return t->level;
 }
 
 void fill_pixel(struct tank_t *t){
     for (int j=t->x1;j<t->x2+1;j++)
-        putpixel(screen, j, t->y2-t->level, BLUE);    //color line by line in blue
+        putpixel(screen, j, t->y2-t->level, BLUE);  //color line by line in blue
 }
 
 void empty_pixel(struct tank_t *t){
     for (int j=t->x1;j<t->x2+1;j++)
-        putpixel(screen, j, (t->y2-t->level)+1, WHITE);   //color line by line in white
+        putpixel(screen, j, (t->y2-t->level)+1, WHITE); //color line by line in white
 }
  
 void *th_tap(void *arg){            //thread that manage the tap task
     struct tank_t *t = &tank;
 
     while (1){
-        usleep (500); 
-        pthread_mutex_lock (&t->mutex);
+        usleep(500); 
+        pthread_mutex_lock(&t->mutex);
         
         while (!t->tap)             //lock il tap is not click
-            pthread_cond_wait (&t->C_t, &t->mutex);
+            pthread_cond_wait(&t->C_t, &t->mutex);
         
-        if (t->level>0){
+        if (t->level>MINLEVEL){
             empty_pixel(t);         //if tank is not empty do it
             update_level(t);
             }
         t->tap = FALSE;
-        pthread_mutex_unlock (&t->mutex);
+        pthread_mutex_unlock(&t->mutex);
     }
 }
 
 void *th_filler(void *arg){         //thread that manage fill task
     struct tank_t *t = &tank;
 
-    while(1){
+    while (1){
         usleep(1000);
-        pthread_mutex_lock (&t->mutex);
+        pthread_mutex_lock(&t->mutex);
         
-        while(t->level > desired_level-1)       //if level is higher i'm not refill
+        while (t->level > desired_level-1)       //if level is higher i'm not refill
             pthread_cond_wait(&t->C_f, &t->mutex);
 
-        if (t->level<300){
+        if (t->level<MAXLEVEL){
             fill_pixel(t);      //refill
             update_level(t);
         }
-        pthread_mutex_unlock (&t->mutex);
+        pthread_mutex_unlock(&t->mutex);
     }    
 }
 
-void *th_tank (void *arg){      //task tank to check the status of tank
+void *th_tank(void *arg){      //task tank to check the status of tank
     struct tank_t *t = &tank;
     
-    while(1){
+    while (1){
         sleep(1/2);
-        pthread_mutex_lock (&t->mutex);
-        check_tap (t);          //check if the tap is hold
-        check_level (t);        //check liquid level
+        pthread_mutex_lock(&t->mutex);
+        check_tap(t);          //check if the tap is hold
+        check_level(t);        //check liquid level
         
         printf("livello: %d\t sensor: %d\n", get_level(t), t->sensor);
 
-        pthread_mutex_unlock (&t->mutex);
+        pthread_mutex_unlock(&t->mutex);
     }
 }
 
-void *th_sensor (void *args){       //sensor task to evaluate quantity of liquid
+void *th_sensor(void *args){       //sensor task to evaluate quantity of liquid
     struct tank_t *t = &tank;
     
-    while(1){
+    while (1){
         sleep(1/2);
         pthread_mutex_lock(&t->mutex);
         update_level(t);
@@ -185,14 +190,14 @@ int main(){
 
     pthread_t tank, filler, tap, sensor;
 
-    pthread_create (&tank, NULL, th_tank, NULL);
-    pthread_create (&sensor, NULL, th_sensor, NULL);
-    pthread_create (&filler, NULL, th_filler, NULL);
-    pthread_create (&tap, NULL, th_tap, NULL);
+    pthread_create(&tank, NULL, th_tank, NULL);
+    pthread_create(&sensor, NULL, th_sensor, NULL);
+    pthread_create(&filler, NULL, th_filler, NULL);
+    pthread_create(&tap, NULL, th_tap, NULL);
 
-    pthread_join (tank, NULL);
-    pthread_join (filler, NULL);
-    pthread_join (tap, NULL);
+    pthread_join(tank, NULL);
+    pthread_join(filler, NULL);
+    pthread_join(tap, NULL);
 
     allegro_exit();
     return 0;
