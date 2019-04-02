@@ -7,49 +7,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <math.h>
-
-//------------------------------------------------------------------------------
-// GLOBAL CONSTANTS
-//------------------------------------------------------------------------------
-#define N           4  //number of tank
-#define XWIN        850 // window x resolution
-#define YWIN        480 // window y resolution
-#define BKG         0   // background color
-#define X0          250 // x position of sensor
-#define Y0          100 // y position of sensor
-#define SMIN        0   // min sensor distance
-#define SMAX        300 // max sensor distance
-#define SSTEP       1   // sensor precision
-#define BLUE        11  // VGA code of blue
-#define WHITE       15  // VGA code of white
-#define MAXLEVEL    300 // max quantity of liquid in tank
-#define MINLEVEL    0   // min quantity of liquid in tank
-#define HTANK       300 // tank hight
-#define WTANK       100 // tank width
-#define X1TANK      150 // position of tank
-#define Y1TANK      100 // position of tank
-#define R           25  // button radious 
-
-int desired_level = 100;
-
-//------------------------------------------------------------------------------
-// STRUCT DEFINITION. TANK AND BUTTON
-//------------------------------------------------------------------------------
-struct tank_t {     //tank data structure
-    pthread_mutex_t mutex[N];
-    pthread_cond_t  C_f[N], C_t[N];
-    int level;
-    int x1, y1, x2, y2, h, w, color;    // tank properties
-    int sensor;     // value read from sensor
-    int xsensor;    // x position of sensor
-    int tnum;       // id tank
-    bool    tap;    // tap status
-}tank[N];
-
-struct button {
-    int x, y, r;    //circle coordinates
-    int txtcolor, bkgcolor;     //text and background color
-}button[N];
+#include "mylib.h"
 
 //------------------------------------------------------------------------------
 // STRUCT INITIALIZATION
@@ -123,7 +81,7 @@ void update_level(struct tank_t *t){
 
 // Function that unloch the refill if liquid in low
 void check_level(struct tank_t *t, void *arg){
-    if (t->level < desired_level){
+    if (t->level < DESLVL){
         pthread_cond_signal(&t->C_f[(intptr_t)arg]);
         }
 }
@@ -193,7 +151,7 @@ void *th_filler(void *arg){         //thread that manage fill task
         usleep(1000);
         pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
         
-        while (t->level > desired_level-1)       //if level is higher i'm not refill
+        while (t->level > DESLVL-1)       //if level is higher i'm not refill
             pthread_cond_wait(&t->C_f[(intptr_t)arg], &t->mutex[(intptr_t)arg]);
 
         if (t->level<MAXLEVEL){
@@ -229,38 +187,4 @@ void *th_sensor(void *arg){       //sensor task to evaluate quantity of liquid
         update_level(t);
         pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
     }
-}
-
-//------------------------------------------------------------------------------
-// MAIN FUNCTION
-//------------------------------------------------------------------------------
-int main(){
-    init_allegro();
-    for (int i=0;i<N;i++){
-        init_tank_t(&tank[i], i+1);
-        init_button(&button[i], &tank[i]);
-        create_tank(&tank[i]);
-        create_button(&button[i]);
-    }
-
-    pthread_t tank[N-1], filler[N-1], tap[N-1], sensor[N-1];
-
-    for (int i=0;i<N;i++){
-        pthread_create(&tank[i], NULL, th_tank, (void *)(intptr_t)i);
-        pthread_create(&sensor[i], NULL, th_sensor, (void *)(intptr_t)i);
-        pthread_create(&filler[i], NULL, th_filler, (void *)(intptr_t)i);
-        pthread_create(&tap[i], NULL, th_tap, (void *)(intptr_t)i);
-        usleep(250000);    
-    }
-    
-    for (int i=0;i<N;i++){
-        pthread_join(tank[i], NULL);
-        pthread_join(sensor[i], NULL);
-        pthread_join(filler[i], NULL);
-        pthread_join(tap[i], NULL);
-    }
-
-    allegro_exit();
-
-    return 0;
 }
