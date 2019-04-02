@@ -16,7 +16,7 @@
 #define X1TANK      150 // Position of tank
 #define Y1TANK      100 // Position of tank
 #define R           25  // Button radious 
-#define DESLVL      100 // Desired level
+#define DESLVL      150 // Desired level
 
 struct tank_t {     // Tank data structure
     pthread_mutex_t mutex[N];
@@ -40,7 +40,6 @@ void read_sensor(struct tank_t *t);
 void update_level(struct tank_t *t);
 void check_level(struct tank_t *t, void *arg);
 void check_tap(struct tank_t *t, struct button *b, void *arg);
-int get_level(struct tank_t *t);
 void fill_pixel(struct tank_t *t);
 void empty_pixel(struct tank_t *t);
 void init_tank_t(struct tank_t *t, int i);
@@ -50,3 +49,4 @@ void *th_tap(void *arg);
 void *th_filler(void *arg);
 void *th_tank(void *arg);
 void *th_sensor(void *arg);
+int get_level(struct tank_t *t);
