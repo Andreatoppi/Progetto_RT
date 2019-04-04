@@ -121,6 +121,20 @@ void empty_pixel(struct tank_t *t){
         putpixel(screen, j, (t->y2-t->level)+1, WHITE);
 }
 
+// Function thah print level on the screen
+void show_status(struct tank_t *t){
+    char s[10];
+    textout_centre_ex(screen, font, "         ", t->xsensor, t->y2+R, WHITE, BKG);
+    sprintf(s,"Lvl: %d", t->level);
+    if (t->level == MINLEVEL)
+        textout_centre_ex(screen, font, "No  fluid", t->xsensor, t->y2+R, WHITE, BKG);
+    else
+    if (t->level == MAXLEVEL)
+        textout_centre_ex(screen, font, "Max level", t->xsensor, t->y2+R, WHITE, BKG);
+    else
+        textout_centre_ex(screen, font, s, t->xsensor, t->y2+R, WHITE, BKG);
+}
+
 //------------------------------------------------------------------------------
 // THREAD
 //------------------------------------------------------------------------------
@@ -137,7 +151,7 @@ void *th_tap(void *arg){            //tap sensor
         if (t->level>MINLEVEL){
             empty_pixel(t);         //if tank is not empty do it
             update_level(t);
-            }
+        }
 
         t->tap = FALSE;
         pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
@@ -158,6 +172,7 @@ void *th_filler(void *arg){         //thread that manage fill task
             fill_pixel(t);      //refill
             update_level(t);
         }
+
         pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
     }    
 }
@@ -171,7 +186,7 @@ void *th_tank(void *arg){      //task tank to check the status of tank
         pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
         check_tap(t, b, arg);       //check if the tap is hold
         check_level(t, arg);        //check liquid level
-        
+        show_status(t);
         // printf("livello: %d\t sensor: %d\t tank: %ld\n" , get_level(t), t->sensor, (intptr_t)arg);
 
         pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
