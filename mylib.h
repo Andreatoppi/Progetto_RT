@@ -16,7 +16,7 @@
 #define X1TANK      150 // Position of tank
 #define Y1TANK      100 // Position of tank
 #define R           25  // Button radious 
-#define DESLVL      150 // Desired level
+#define DESLVL      100 // Desired level
 
 struct tank_t {     // Tank data structure
     pthread_mutex_t mutex[N];
