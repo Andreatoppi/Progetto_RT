@@ -48,6 +48,15 @@ void init_allegro(void){
     show_mouse(screen);
 }
 
+void init_gui(){
+    for (int i=0;i<N;i++){
+        init_tank_t(&tank[i], i+1);
+        init_button(&button[i], &tank[i]);
+        create_tank(&tank[i]);
+        create_button(&button[i]);
+    }
+}
+
 // Function that print tank on the screen
 void create_tank(struct tank_t *t){
     rectfill(screen, t->x1, t->y1, t->x2, t->y2, t->color);
@@ -135,10 +144,11 @@ void show_status(struct tank_t *t){
         textout_centre_ex(screen, font, s, t->xsensor, t->y2+R, WHITE, BKG);
 }
 
+
 //------------------------------------------------------------------------------
 // THREAD
 //------------------------------------------------------------------------------
-void *th_tap(void *arg){            //tap sensor
+void *th_tap(void *arg){        //tap sensor
     struct tank_t *t = &tank[(intptr_t)arg];
 
     while (1){
@@ -158,7 +168,7 @@ void *th_tap(void *arg){            //tap sensor
     }
 }
 
-void *th_filler(void *arg){         //thread that manage fill task
+void *th_filler(void *arg){     //thread that manage fill task
     struct tank_t *t = &tank[(intptr_t)arg];
 
     while (1){
@@ -177,7 +187,7 @@ void *th_filler(void *arg){         //thread that manage fill task
     }    
 }
 
-void *th_tank(void *arg){      //task tank to check the status of tank
+void *th_tank(void *arg){       //task tank to check the status of tank
     struct tank_t *t = &tank[(intptr_t)arg];
     struct button *b = &button[(intptr_t)arg];   
     
@@ -193,7 +203,7 @@ void *th_tank(void *arg){      //task tank to check the status of tank
     }
 }
 
-void *th_sensor(void *arg){       //sensor task to evaluate quantity of liquid
+void *th_sensor(void *arg){     //sensor task to evaluate quantity of liquid
     struct tank_t *t = &tank[(intptr_t)arg];
     
     while (1){

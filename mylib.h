@@ -34,6 +34,9 @@ struct button {
     int txtcolor, bkgcolor;     //text and background color
 }button[N];
 
+void init_button(struct button *b, struct tank_t *t);
+void init_allegro(void);
+void init_gui();
 void create_tank(struct tank_t *t);
 void create_button(struct button *b);
 void read_sensor(struct tank_t *t);
@@ -45,8 +48,6 @@ void empty_pixel(struct tank_t *t);
 int get_level(struct tank_t *t);
 void show_status(struct tank_t *t);
 void init_tank_t(struct tank_t *t, int i);
-void init_button(struct button *b, struct tank_t *t);
-void init_allegro(void);
 void *th_tap(void *arg);
 void *th_filler(void *arg);
 void *th_tank(void *arg);

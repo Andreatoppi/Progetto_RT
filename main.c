@@ -11,12 +11,8 @@
 
 int main(){
     init_allegro();
-    for (int i=0;i<N;i++){
-        init_tank_t(&tank[i], i+1);
-        init_button(&button[i], &tank[i]);
-        create_tank(&tank[i]);
-        create_button(&button[i]);
-    }
+    init_gui();
+    
 
     pthread_t tank[N-1], filler[N-1], tap[N-1], sensor[N-1];
 
