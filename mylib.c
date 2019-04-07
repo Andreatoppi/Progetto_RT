@@ -29,6 +29,7 @@ void init_tank_t(struct tank_t *t, int i){
     t->sensor = SMIN;
     t->xsensor = (X1TANK * i) + (WTANK / 2);
     t->tnum = i;
+    t->desired_level = DESLVL;
 }
 
 void init_button(struct button *b, struct tank_t *t){
@@ -37,6 +38,15 @@ void init_button(struct button *b, struct tank_t *t){
     b->r = R;
     b->txtcolor = BKG;
     b->bkgcolor = WHITE;
+}
+
+void init_input_field(struct input_field *i, struct tank_t *t){
+    i->x1 = t->x1;
+    i->x2 = t->x2;
+    i->y1 = t->y2 + 55;
+    i->y2 = t->y2 + 65;
+    i->color = WHITE;
+    i->inc = i->dec = FALSE;
 }
 
 void init_allegro(void){
@@ -48,12 +58,14 @@ void init_allegro(void){
     show_mouse(screen);
 }
 
-void init_gui(){
+void init_gui(void){
     for (int i=0;i<N;i++){
         init_tank_t(&tank[i], i+1);
         init_button(&button[i], &tank[i]);
+        init_input_field(&input_field[i], &tank[i]);
         create_tank(&tank[i]);
         create_button(&button[i]);
+        create_input_field(&input_field[i]);
     }
 }
 
@@ -66,6 +78,10 @@ void create_tank(struct tank_t *t){
 void create_button(struct button *b){
     circle(screen, b->x, b->y, b->r, b->bkgcolor);
     textout_centre_ex(screen, font, "Open", b->x, b->y, b->bkgcolor, b->txtcolor);
+}
+
+void create_input_field(struct input_field *i){
+    rectfill(screen, i->x1, i->y1, i->x2, i->y2, i->color);
 }
 
 // Function used by sensor thread to evaluate proximity of liquid
@@ -90,7 +106,7 @@ void update_level(struct tank_t *t){
 
 // Function that unloch the refill if liquid in low
 void check_level(struct tank_t *t, void *arg){
-    if (t->level < DESLVL){
+    if (t->level < t->desired_level){
         pthread_cond_signal(&t->C_f[(intptr_t)arg]);
         }
 }
@@ -130,21 +146,59 @@ void empty_pixel(struct tank_t *t){
         putpixel(screen, j, (t->y2-t->level)+1, WHITE);
 }
 
-// Function thah print level on the screen
+// Function thah print tank status on the screen
 void show_status(struct tank_t *t){
-    char lvl[10];
+    char lvl[12], d_lvl[14], nofluid[9], maxlvl[10];
     sprintf(lvl," Lvl: %d ", t->level);
+    sprintf(d_lvl, " Lvl des: %d ", t->desired_level);
+    sprintf(nofluid, "No fluid");
+    sprintf(maxlvl, "Max level");
+
     textout_centre_ex(screen, font, "         ", t->xsensor, t->y2+15, BKG, BKG);
+    
     if (t->level == MINLEVEL)
-        textout_centre_ex(screen, font, "No Fluid", t->xsensor, t->y2+15, WHITE, BKG);
+        textout_centre_ex(screen, font, nofluid, t->xsensor, t->y2+15, WHITE, BKG);
     
     if (t->level == MAXLEVEL)
-        textout_centre_ex(screen, font, "Max Level", t->xsensor, t->y2+15, WHITE, BKG);
-            
+        textout_centre_ex(screen, font, maxlvl, t->xsensor, t->y2+15, WHITE, BKG);
+    
+
     textout_centre_ex(screen, font, lvl, t->xsensor, t->y2+35, BKG, BKG);
     textout_centre_ex(screen, font, lvl, t->xsensor, t->y2+35, WHITE, BKG);
+    textout_centre_ex(screen, font, d_lvl, t->xsensor, t->y1-15, BKG, BKG);
+    textout_centre_ex(screen, font, d_lvl, t->xsensor, t->y1-15, WHITE, BKG);
+
 }
 
+// Function that increase desiderated level
+void increase_level(struct tank_t *t){
+    t->desired_level++;
+}
+
+// Function that decrease desiderated level
+void decrease_level(struct tank_t *t){
+    t->desired_level--;
+}
+
+void check_input(struct input_field *i, struct tank_t *t){
+    int x, y;   //mouse coordinates
+    x = mouse_x;
+    y = mouse_y;
+
+    if (i->x1 < x && x < i->x2-50 && i->y1 < y && y < i->y2 && mouse_b == 1)
+        i->inc = TRUE;
+    if (i->x1+50 < x && x < i->x2 && i->y1 < y && y < i->y2 && mouse_b == 1)
+        i->dec = TRUE;
+
+    if (i->inc){
+        i->inc = FALSE;
+        increase_level(t);
+    }
+    if (i->dec){
+        i->dec = FALSE;
+        decrease_level(t);
+    }
+}
 
 //------------------------------------------------------------------------------
 // THREAD
@@ -153,7 +207,7 @@ void *th_tap(void *arg){        //tap sensor
     struct tank_t *t = &tank[(intptr_t)arg];
 
     while (1){
-        usleep(5000); 
+        usleep(10000); 
         pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
         
         while (!t->tap)             //lock il tap is not click
@@ -173,10 +227,10 @@ void *th_filler(void *arg){     //thread that manage fill task
     struct tank_t *t = &tank[(intptr_t)arg];
 
     while (1){
-        usleep(10000);
+        usleep(20000);
         pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
         
-        while (t->level > DESLVL-1)       //if level is higher i'm not refill
+        while (t->level > t->desired_level-1)       //if level is higher i'm not refill
             pthread_cond_wait(&t->C_f[(intptr_t)arg], &t->mutex[(intptr_t)arg]);
 
         if (t->level<MAXLEVEL){
@@ -190,14 +244,16 @@ void *th_filler(void *arg){     //thread that manage fill task
 
 void *th_tank(void *arg){       //task tank to check the status of tank
     struct tank_t *t = &tank[(intptr_t)arg];
-    struct button *b = &button[(intptr_t)arg];   
+    struct button *b = &button[(intptr_t)arg];  
+    struct input_field *i = &input_field[(intptr_t)arg];  
     
     while (1){
-        usleep(5000);
+        usleep(10000);
         pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
-        check_tap(t, b, arg);       //check if the tap is hold
-        check_level(t, arg);        //check liquid level
-        show_status(t);
+        check_tap(t, b, arg);       // check if the tap is hold
+        check_level(t, arg);        // check liquid level
+        show_status(t);             // show the current level of liquid
+        check_input(i, t);
         // printf("livello: %d\t sensor: %d\t tank: %ld\n" , get_level(t), t->sensor, (intptr_t)arg);
 
         pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
@@ -208,7 +264,7 @@ void *th_sensor(void *arg){     //sensor task to evaluate quantity of liquid
     struct tank_t *t = &tank[(intptr_t)arg];
     
     while (1){
-        usleep(5000);
+        usleep(10000);
         pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
         update_level(t);
         pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);

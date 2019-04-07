@@ -27,6 +27,7 @@ struct tank_t {     // Tank data structure
     int xsensor;    // x position of sensor
     int tnum;       // id tank
     bool    tap;    // tap status
+    int desired_level;
 }tank[N];
 
 struct button {
@@ -34,11 +35,20 @@ struct button {
     int txtcolor, bkgcolor;     //text and background color
 }button[N];
 
+struct input_field {
+    int x1, y1, x2, y2;
+    int color;
+    bool inc, dec;  // increase and decrease button state
+}input_field[N];
+
+void init_tank_t(struct tank_t *t, int i);
 void init_button(struct button *b, struct tank_t *t);
+void init_input_field(struct input_field *i, struct tank_t *t);
 void init_allegro(void);
-void init_gui();
+void init_gui(void);
 void create_tank(struct tank_t *t);
 void create_button(struct button *b);
+void create_input_field(struct input_field *i);
 void read_sensor(struct tank_t *t);
 void update_level(struct tank_t *t);
 void check_level(struct tank_t *t, void *arg);
@@ -47,7 +57,9 @@ void fill_pixel(struct tank_t *t);
 void empty_pixel(struct tank_t *t);
 int get_level(struct tank_t *t);
 void show_status(struct tank_t *t);
-void init_tank_t(struct tank_t *t, int i);
+void check_input(struct input_field *i, struct tank_t *t);
+void increase_level(struct tank_t *t);
+void decrease_level(struct tank_t *t);
 void *th_tap(void *arg);
 void *th_filler(void *arg);
 void *th_tank(void *arg);

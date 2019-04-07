@@ -23,6 +23,9 @@ int main(){
         pthread_create(&tap[i], NULL, th_tap, (void *)(intptr_t)i);
         usleep(250000);    
     }
+    do{
+
+    }while(!key[KEY_ESC]);  
     
     for (int i=0;i<N;i++){
         pthread_join(tank[i], NULL);
