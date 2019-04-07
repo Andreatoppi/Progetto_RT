@@ -82,6 +82,8 @@ void create_button(struct button *b){
 
 void create_input_field(struct input_field *i){
     rectfill(screen, i->x1, i->y1, i->x2, i->y2, i->color);
+    textout_centre_ex(screen, font, "+", i->x1+R, i->y2-8, BKG, WHITE);
+    textout_centre_ex(screen, font, "-", i->x2-R, i->y2-8, BKG, WHITE);
 }
 
 // Function used by sensor thread to evaluate proximity of liquid
