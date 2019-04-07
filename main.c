@@ -16,6 +16,7 @@ int main(){
 
     pthread_t tank[N-1], filler[N-1], tap[N-1], sensor[N-1];
 
+    // Thread init
     for (int i=0;i<N;i++){
         pthread_create(&tank[i], NULL, th_tank, (void *)(intptr_t)i);
         pthread_create(&sensor[i], NULL, th_sensor, (void *)(intptr_t)i);
@@ -23,10 +24,8 @@ int main(){
         pthread_create(&tap[i], NULL, th_tap, (void *)(intptr_t)i);
         usleep(250000);    
     }
-    do{
-
-    }while(!key[KEY_ESC]);  
     
+    // Thread join
     for (int i=0;i<N;i++){
         pthread_join(tank[i], NULL);
         pthread_join(sensor[i], NULL);

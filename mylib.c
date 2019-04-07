@@ -148,13 +148,14 @@ void empty_pixel(struct tank_t *t){
 
 // Function thah print tank status on the screen
 void show_status(struct tank_t *t){
-    char lvl[12], d_lvl[14], nofluid[9], maxlvl[10];
+    char lvl[12], d_lvl[14], nofluid[9], maxlvl[10], clear[12];
     sprintf(lvl," Lvl: %d ", t->level);
     sprintf(d_lvl, " Lvl des: %d ", t->desired_level);
     sprintf(nofluid, "No fluid");
     sprintf(maxlvl, "Max level");
+    sprintf(clear, "         ");
 
-    textout_centre_ex(screen, font, "         ", t->xsensor, t->y2+15, BKG, BKG);
+    textout_centre_ex(screen, font, clear, t->xsensor, t->y2+15, BKG, BKG);
     
     if (t->level == MINLEVEL)
         textout_centre_ex(screen, font, nofluid, t->xsensor, t->y2+15, WHITE, BKG);
@@ -180,6 +181,7 @@ void decrease_level(struct tank_t *t){
     t->desired_level--;
 }
 
+// Function that cack if user want to change desiderated lvl
 void check_input(struct input_field *i, struct tank_t *t){
     int x, y;   //mouse coordinates
     x = mouse_x;
