@@ -49,6 +49,9 @@ void init_input_field(struct input_field *i, struct tank_t *t){
     i->inc = i->dec = FALSE;
 }
 
+//------------------------------------------------------------------------------
+// GUI INITIALIZATION
+//------------------------------------------------------------------------------
 void init_allegro(void){
     allegro_init();
     install_mouse();
@@ -80,11 +83,16 @@ void create_button(struct button *b){
     textout_centre_ex(screen, font, "Open", b->x, b->y, b->bkgcolor, b->txtcolor);
 }
 
+// Function that print button on the screen
 void create_input_field(struct input_field *i){
     rectfill(screen, i->x1, i->y1, i->x2, i->y2, i->color);
     textout_centre_ex(screen, font, "+", i->x1+R, i->y2-8, BKG, WHITE);
     textout_centre_ex(screen, font, "-", i->x2-R, i->y2-8, BKG, WHITE);
 }
+
+//------------------------------------------------------------------------------
+// LOGICAL FUNCTIONS
+//------------------------------------------------------------------------------
 
 // Function used by sensor thread to evaluate proximity of liquid
 void read_sensor(struct tank_t *t){

@@ -1,4 +1,4 @@
-#define N           1   // Number of tank
+#define N           4   // Number of tank
 #define XWIN        850 // Window x resolution
 #define YWIN        480 // Window y resolution
 #define BKG         0   // Background color

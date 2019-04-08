@@ -25,6 +25,12 @@ int main(){
         usleep(250000);    
     }
     
+    do{
+        
+    }while(!key[KEY_ESC]);
+
+    allegro_exit();
+
     // Thread join
     for (int i=0;i<N;i++){
         pthread_join(tank[i], NULL);
@@ -32,8 +38,6 @@ int main(){
         pthread_join(filler[i], NULL);
         pthread_join(tap[i], NULL);
     }
-
-    allegro_exit();
 
     return 0;
 }
