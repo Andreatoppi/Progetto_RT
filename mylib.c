@@ -172,7 +172,6 @@ void show_status(struct tank_t *t){
     
     if (t->level == MAXLEVEL)
         textout_centre_ex(screen, font, maxlvl, t->xsensor, t->y2+15, WHITE, BKG);
-    
 
     textout_centre_ex(screen, font, lvl, t->xsensor, t->y2+35, BKG, BKG);
     textout_centre_ex(screen, font, lvl, t->xsensor, t->y2+35, WHITE, BKG);
@@ -230,7 +229,8 @@ void *th_tap(void *arg){        //tap sensor
             update_level(t);
         }
 
-        t->tap = FALSE;
+        t->tap = FALSE;     // variable reset
+
         pthread_mutex_unlock(&t->mutex);
     }
 }
@@ -262,11 +262,11 @@ void *th_tank(void *arg){       //task tank to check the status of tank
     while (1){
         usleep(10000);
         pthread_mutex_lock(&t->mutex);
-        check_tap(t, b, arg);       // check if the tap is hold
-        check_level(t, arg);        // check liquid level
-        show_status(t);             // show the current level of liquid
-        check_input(i, t);
-        // printf("livello: %d\t sensor: %d\t tank: %ld\n" , get_level(t), t->sensor, (intptr_t)arg);
+
+        check_tap(t, b, arg);   // check if the tap is hold
+        check_level(t, arg);    // check liquid level
+        show_status(t);         // show the current level of liquid
+        check_input(i, t);      // check if user click on + or -
 
         pthread_mutex_unlock(&t->mutex);
     }
@@ -278,7 +278,9 @@ void *th_sensor(void *arg){     //sensor task to evaluate quantity of liquid
     while (1){
         usleep(10000);
         pthread_mutex_lock(&t->mutex);
+
         update_level(t);
+        
         pthread_mutex_unlock(&t->mutex);
     }
 }

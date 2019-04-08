@@ -2,7 +2,6 @@
 #define XWIN        850 // Window x resolution
 #define YWIN        480 // Window y resolution
 #define BKG         0   // Background color
-#define X0          250 // X position of sensor
 #define Y0          100 // Y position of sensor
 #define SMIN        0   // Min sensor distance
 #define SMAX        300 // Max sensor distance
@@ -20,17 +19,17 @@
 
 struct tank_t {     // Tank data structure
     pthread_mutex_t mutex;
-    pthread_cond_t  C_f, C_t;
+    pthread_cond_t  C_f, C_t;   // fill and tap cond_var
     int level;
     int x1, y1, x2, y2, h, w, color;    // tank properties
-    int sensor;     // value read from sensor
-    int xsensor;    // x position of sensor
-    int tnum;       // id tank
-    bool    tap;    // tap status
-    int desired_level;
+    int sensor;         // value read from sensor
+    int xsensor;        // x position of sensor
+    int tnum;           // id tank
+    bool    tap;        // tap status
+    int desired_level;  // desired level controlled by user
 }tank[N];
 
-struct button {
+struct button {     // Button data structure
     int x, y, r;    //circle coordinates
     int txtcolor, bkgcolor;     //text and background color
 }button[N];

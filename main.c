@@ -13,7 +13,6 @@ int main(){
     init_allegro();
     init_gui();
     
-
     pthread_t tank[N-1], filler[N-1], tap[N-1], sensor[N-1];
 
     // Thread init
@@ -22,7 +21,6 @@ int main(){
         pthread_create(&sensor[i], NULL, th_sensor, (void *)(intptr_t)i);
         pthread_create(&filler[i], NULL, th_filler, (void *)(intptr_t)i);
         pthread_create(&tap[i], NULL, th_tap, (void *)(intptr_t)i);
-        usleep(250000);    
     }
     
     do{
