@@ -19,8 +19,8 @@
 #define DESLVL      100 // Desired level
 
 struct tank_t {     // Tank data structure
-    pthread_mutex_t mutex[N];
-    pthread_cond_t  C_f[N], C_t[N];
+    pthread_mutex_t mutex;
+    pthread_cond_t  C_f, C_t;
     int level;
     int x1, y1, x2, y2, h, w, color;    // tank properties
     int sensor;     // value read from sensor

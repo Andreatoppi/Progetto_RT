@@ -14,9 +14,9 @@
 //------------------------------------------------------------------------------
 void init_tank_t(struct tank_t *t, int i){
 
-    pthread_mutex_init(&t->mutex[i-1], NULL);
-    pthread_cond_init(&t->C_f[i-1], NULL);
-    pthread_cond_init(&t->C_t[i-1], NULL);
+    pthread_mutex_init(&t->mutex, NULL);
+    pthread_cond_init(&t->C_f, NULL);
+    pthread_cond_init(&t->C_t, NULL);
     t->level = MINLEVEL;
     t->tap  = FALSE;
     t->x1 = X1TANK * i;
@@ -117,7 +117,7 @@ void update_level(struct tank_t *t){
 // Function that unloch the refill if liquid in low
 void check_level(struct tank_t *t, void *arg){
     if (t->level < t->desired_level){
-        pthread_cond_signal(&t->C_f[(intptr_t)arg]);
+        pthread_cond_signal(&t->C_f);
         }
 }
 
@@ -136,7 +136,7 @@ void check_tap(struct tank_t *t, struct button *b, void *arg){
         t->tap = FALSE;
 
     if (t->tap && t->level>0)
-        pthread_cond_signal(&t->C_t[(intptr_t)arg]);
+        pthread_cond_signal(&t->C_t);
     }
 
 int get_level(struct tank_t *t){
@@ -220,10 +220,10 @@ void *th_tap(void *arg){        //tap sensor
 
     while (1){
         usleep(10000); 
-        pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
+        pthread_mutex_lock(&t->mutex);
         
         while (!t->tap)             //lock il tap is not click
-            pthread_cond_wait(&t->C_t[(intptr_t)arg], &t->mutex[(intptr_t)arg]);
+            pthread_cond_wait(&t->C_t, &t->mutex);
         
         if (t->level>MINLEVEL){
             empty_pixel(t);         //if tank is not empty do it
@@ -231,7 +231,7 @@ void *th_tap(void *arg){        //tap sensor
         }
 
         t->tap = FALSE;
-        pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
+        pthread_mutex_unlock(&t->mutex);
     }
 }
 
@@ -240,17 +240,17 @@ void *th_filler(void *arg){     //thread that manage fill task
 
     while (1){
         usleep(20000);
-        pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
+        pthread_mutex_lock(&t->mutex);
         
         while (t->level > t->desired_level-1)       //if level is higher i'm not refill
-            pthread_cond_wait(&t->C_f[(intptr_t)arg], &t->mutex[(intptr_t)arg]);
+            pthread_cond_wait(&t->C_f, &t->mutex);
 
         if (t->level<MAXLEVEL){
             fill_pixel(t);      //refill
             update_level(t);
         }
 
-        pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
+        pthread_mutex_unlock(&t->mutex);
     }    
 }
 
@@ -261,14 +261,14 @@ void *th_tank(void *arg){       //task tank to check the status of tank
     
     while (1){
         usleep(10000);
-        pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
+        pthread_mutex_lock(&t->mutex);
         check_tap(t, b, arg);       // check if the tap is hold
         check_level(t, arg);        // check liquid level
         show_status(t);             // show the current level of liquid
         check_input(i, t);
         // printf("livello: %d\t sensor: %d\t tank: %ld\n" , get_level(t), t->sensor, (intptr_t)arg);
 
-        pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
+        pthread_mutex_unlock(&t->mutex);
     }
 }
 
@@ -277,8 +277,8 @@ void *th_sensor(void *arg){     //sensor task to evaluate quantity of liquid
     
     while (1){
         usleep(10000);
-        pthread_mutex_lock(&t->mutex[(intptr_t)arg]);
+        pthread_mutex_lock(&t->mutex);
         update_level(t);
-        pthread_mutex_unlock(&t->mutex[(intptr_t)arg]);
+        pthread_mutex_unlock(&t->mutex);
     }
 }
