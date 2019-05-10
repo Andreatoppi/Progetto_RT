@@ -34,7 +34,7 @@ void init_tank_t(struct tank_t *t, int i){
 
 void init_button(struct button *b, struct tank_t *t){
     b->x = t->xsensor;
-    b->y = t->y1 - 50;
+    b->y = t->y1 - 2 * R;
     b->r = R;
     b->txtcolor = BKG;
     b->bkgcolor = WHITE;

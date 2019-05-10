@@ -23,8 +23,7 @@ int main(){
         pthread_create(&tap[i], NULL, th_tap, (void *)(intptr_t)i);
     }
     
-    do{
-        
+    do{  
     }while(!key[KEY_ESC]);
 
     allegro_exit();
