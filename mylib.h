@@ -59,6 +59,8 @@ void show_status(struct tank_t *t);
 void check_input(struct input_field *i, struct tank_t *t);
 void increase_level(struct tank_t *t);
 void decrease_level(struct tank_t *t);
+void fill(struct tank_t *t);
+void empty(struct tank_t *t);
 void *th_tap(void *arg);
 void *th_filler(void *arg);
 void *th_tank(void *arg);
