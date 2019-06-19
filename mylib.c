@@ -56,7 +56,7 @@ void init_allegro(void){
     allegro_init();
     install_mouse();
     install_keyboard();
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, XWIN, YWIN, 0, 0);
+    set_gfx_mode(GFX_AUTODETECT_WINDOWED, (XWIN*N)+2*X1TANK, YWIN, 0, 0);
     clear_to_color(screen, BKG);
     show_mouse(screen);
 }
@@ -75,6 +75,7 @@ void init_gui(void){
 // Function that print tank on the screen
 void create_tank(struct tank_t *t){
     rectfill(screen, t->x1, t->y1, t->x2, t->y2, t->color);
+    textout_centre_ex(screen, font, "ESC to exit", 50, YWIN-20, WHITE, BKG);
 }
 
 // Function that print circle button on the screen
@@ -304,9 +305,6 @@ void *th_sensor(void *arg){     //sensor task to evaluate quantity of liquid
     
     while (1){
         usleep(1000);
-        // pthread_mutex_lock(&t->mutex);
         update_level(t);
-        // pthread_mutex_unlock(&t->mutex);
-
     }
 }

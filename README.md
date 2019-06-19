@@ -44,3 +44,8 @@ Now just run the executable "main"
 # $./main
 
 To stop the execution Ctrl^C or ESC on terminal window.
+
+# Customization
+
+If you want to modify the number of tanks you should change N value in the mylib.h file.
+Then recompile with makefile. 

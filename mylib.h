@@ -1,5 +1,5 @@
-#define N           4   // Number of tank
-#define XWIN        850 // Window x resolution
+#define N           3   // Number of tank
+#define XWIN        150 // Window x resolution
 #define YWIN        480 // Window y resolution
 #define BKG         0   // Background color
 #define Y0          100 // Y position of sensor

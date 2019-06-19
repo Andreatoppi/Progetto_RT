@@ -22,7 +22,7 @@ int main(){
         pthread_create(&filler[i], NULL, th_filler, (void *)(intptr_t)i);
         pthread_create(&tap[i], NULL, th_tap, (void *)(intptr_t)i);
     }
-    
+
     do{  
     }while(!key[KEY_ESC]);
 
