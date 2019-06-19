@@ -43,4 +43,4 @@ Now just run the executable "main"
 
 # $./main
 
-To stop the execution Ctrl^C on terminal window.
+To stop the execution Ctrl^C or ESC on terminal window.
