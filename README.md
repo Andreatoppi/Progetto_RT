@@ -15,7 +15,7 @@ so to empty the tank.
 
 When tank's level goes beyond the minimum desiderated a filler task is activate automatically.
 
-Even by graphical interface you can modify desired level of tanks using buttons under the tank.
+Across by graphical interface you can modify desired level of tanks using buttons under the tank.
 
 
 
