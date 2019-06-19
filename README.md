@@ -6,9 +6,9 @@ Real Time Embedded System exam.
 
 # Application goal:
 
-Goal of this application is to simulate, in industrial scope, the behavior of a tank
-that want to maintain your own liquid at a certain level according with a proximity sensor
-located on top of tank.
+Goal of this application is to simulate the behavior of a tank
+that want to maintain your own liquid at a certain level according with a 
+proximity sensor located on top of tank.
 
 The tank has a button, controlled by graphical interface, that allow to open a tap 
 so to empty the tank.
