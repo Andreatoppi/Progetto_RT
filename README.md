@@ -1,10 +1,16 @@
 # Progetto_RT
-This collection of file is the result of my project, developed in order to pass the 
+This collection of file is the result of my project, developed to take the 
 Real Time Embedded System exam.
 
 
 
 # Application goal:
+
+Project n. 28. Tanks.
+"Simulate​ N tanks that have to maintain the liquid at a desired​ level. Each tank has 
+an output tap at the bottom to get the liquid and an input ​tap at the top to add new liquid.
+The liquid level is acquired by a proximity​ sensor located on the top. Each input tap is 
+automaticall controlled by​ a periodic task, while output taps are controlled by the user."
 
 Goal of this application is to simulate the behavior of a tank
 that want to maintain your own liquid at a certain level according with a 
@@ -27,7 +33,7 @@ that manage dipendences, libraries and so on in the project and a readme.md file
 The main.c file include the main function of application. It serves to load the graphical interface
 and run threads.
 
-The mylib.h file is a my properties library generated to group all the function prototype and the 
+The mylib.h file is a my properties library generated to group function prototype and
 data structures.
 
 The mylib.c file implement function and threads behaviour managing all the situation.

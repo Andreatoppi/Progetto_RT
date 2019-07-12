@@ -9,7 +9,8 @@
 #include <math.h>
 #include "mylib.h"
 
-int main(){
+int main()
+{
     init_allegro();
     init_gui();
     

@@ -19,7 +19,7 @@
 
 struct tank_t {     // Tank data structure
     pthread_mutex_t mutex;
-    pthread_cond_t  C_f, C_t;   // fill and tap cond_var
+    pthread_cond_t  C_f, C_t;   // fcondition_variable_filler-tank
     int level;
     int x1, y1, x2, y2, h, w, color;    // tank properties
     int sensor;         // value read from sensor
@@ -30,12 +30,12 @@ struct tank_t {     // Tank data structure
 }tank[N];
 
 struct button {     // Button data structure
-    int x, y, r;    //circle coordinates
-    int txtcolor, bkgcolor;     //text and background color
+    int x, y, r;    // circle coordinates
+    int txtcolor, bkgcolor;     // text and background color
 }button[N];
 
 struct input_field {
-    int x1, y1, x2, y2;
+    int x1, y1, x2, y2; // input fields coordinates
     int color;
     bool inc, dec;  // increase and decrease button state
 }input_field[N];
