@@ -256,13 +256,16 @@ void check_input(struct input_field *i, struct tank_t *t){
 void fill(struct tank_t *t){
     pthread_mutex_lock(&t->mutex);
         
-    while (t->level > t->desired_level-1)   //if level is higher i'm not refill
+    while (t->level > t->desired_level-1){   //if level is higher i'm not refill
+        textout_centre_ex(screen, font, "Fill", t->x1-20, t->y1+100, BKG, BKG);
         pthread_cond_wait(&t->C_f, &t->mutex);
+    }
 
     if (t->level<MAXLEVEL){ // if tank is full do not fill
         fill_pixel(t);      // refill
         read_sensor(t);     // i update the sensor in order to avoid inconsistence
         t->level = MAXLEVEL - t->sensor;
+        textout_centre_ex(screen, font, "Fill", t->x1-20, t->y1+100, BLUE, BKG);
     }
 
     pthread_mutex_unlock(&t->mutex);
@@ -271,13 +274,17 @@ void fill(struct tank_t *t){
 void empty(struct tank_t *t){
     pthread_mutex_lock(&t->mutex);
     
-    while (!t->tap)             //lock if tap is not click
+    while (!t->tap){             //lock if tap is not click
+        textout_centre_ex(screen, font, "Empty", t->x1-20, t->y1+120, BKG, BKG);
         pthread_cond_wait(&t->C_t, &t->mutex);
+    }
     
     if (t->level>MINLEVEL){
         empty_pixel(t);         //if tank is not empty do it
         read_sensor(t);
         t->level = MAXLEVEL - t->sensor;
+        textout_centre_ex(screen, font, "Empty", t->x1-20, t->y1+120, WHITE, BKG);
+
     }
 
     // t->tap = FALSE;     // variable reset
