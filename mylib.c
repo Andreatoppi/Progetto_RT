@@ -40,6 +40,7 @@ void init_button(struct button *b, struct tank_t *t){
     b->r = R;
     b->txtcolor = BKG;
     b->bkgcolor = WHITE;
+    b->state = FALSE;
 }
 
 void init_input_field(struct input_field *i, struct tank_t *t){
@@ -134,6 +135,17 @@ void check_level(struct tank_t *t, void *arg){
     pthread_mutex_unlock(&t->mutex);
 }
 
+// Function that change the message of button
+void change_button(struct button *b){
+    if (!b->state){
+        textout_centre_ex(screen, font, "Close", b->x, b->y, b->bkgcolor, b->bkgcolor);
+        textout_centre_ex(screen, font, "Open ", b->x, b->y, b->bkgcolor, b->txtcolor);}
+    else{
+        textout_centre_ex(screen, font, "Open ", b->x, b->y, b->bkgcolor, b->bkgcolor);
+        textout_centre_ex(screen, font, "Close", b->x, b->y, b->bkgcolor, b->txtcolor);
+    }
+}
+
 // Function that check mouse status, so the tap status
 void check_tap(struct tank_t *t, struct button *b, void *arg){
     int x, y;   //mouse coordinates
@@ -141,16 +153,17 @@ void check_tap(struct tank_t *t, struct button *b, void *arg){
     y = mouse_y;
 
     if (count == 0){
-
         pthread_mutex_lock(&t->mutex);
         if (mouse_b == 1)
             if (b->x-b->r < x && x < b->x+b->r && b->y-b->r < y && y < b->y+b->r){
                 if (t->tap){
-                    t->tap = FALSE; // Now when i open the tap mantain status
+                    t->tap = b->state = FALSE; // Tap mantain status
+                    change_button(b);
                     count = 50;     // Countdown start
                 }
                 else{
-                    t->tap = TRUE;
+                    t->tap = b->state = TRUE;
+                    change_button(b);
                     count = 50;
                 }
             }

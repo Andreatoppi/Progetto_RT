@@ -1,4 +1,4 @@
-#define N           3   // Number of tank
+#define N           4   // Number of tank
 #define XWIN        150 // Window x resolution
 #define YWIN        480 // Window y resolution
 #define BKG         0   // Background color
@@ -34,6 +34,7 @@ struct tank_t {     // Tank data structure
 struct button {     // Button data structure
     int x, y, r;    // circle coordinates
     int txtcolor, bkgcolor;     // text and background color
+    bool state;
 }button[N];
 
 struct input_field {
@@ -53,6 +54,7 @@ void create_input_field(struct input_field *i);
 void read_sensor(struct tank_t *t);
 void update_level(struct tank_t *t);
 void check_level(struct tank_t *t, void *arg);
+void change_button(struct button *b);
 void check_tap(struct tank_t *t, struct button *b, void *arg);
 void fill_pixel(struct tank_t *t);
 void empty_pixel(struct tank_t *t);
