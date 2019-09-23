@@ -7,6 +7,7 @@ Real Time Embedded System exam.
 # Application goal:
 
 Project n. 28. Tanks.
+
 "Simulate​ N tanks that have to maintain the liquid at a desired​ level. Each tank has 
 an output tap at the bottom to get the liquid and an input ​tap at the top to add new liquid.
 The liquid level is acquired by a proximity​ sensor located on the top. Each input tap is 
@@ -23,7 +24,7 @@ When tank's level goes beyond the minimum desiderated a filler task is activate 
 
 Across by graphical interface you can modify desired level of tanks using buttons under the tank.
 
-
+![Screenshot](screenshot.png)
 
 # Application structure
 
