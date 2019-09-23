@@ -9,6 +9,7 @@
 #include <math.h>
 #include "mylib.h"
 
+int count = 0;  // Countdown variable
 //------------------------------------------------------------------------------
 // STRUCT INITIALIZATION
 //------------------------------------------------------------------------------
@@ -30,6 +31,7 @@ void init_tank_t(struct tank_t *t, int i){
     t->xsensor = (X1TANK * i) + (WTANK / 2);
     t->tnum = i;
     t->desired_level = DESLVL;  // desired_level = 100
+    t->count = COUNT;
 }
 
 void init_button(struct button *b, struct tank_t *t){
@@ -138,22 +140,33 @@ void check_tap(struct tank_t *t, struct button *b, void *arg){
     x = mouse_x;
     y = mouse_y;
 
-    pthread_mutex_lock(&t->mutex);
+    if (count == 0){
 
-    if (mouse_b == 1)
-        if (b->x-b->r < x && x < b->x+b->r && b->y-b->r < y && y < b->y+b->r)
-            t->tap = TRUE;
-        else
-            t->tap = FALSE;       
-    else 
-        t->tap = FALSE;
+        pthread_mutex_lock(&t->mutex);
+        if (mouse_b == 1)
+            if (b->x-b->r < x && x < b->x+b->r && b->y-b->r < y && y < b->y+b->r){
+                if (t->tap){
+                    t->tap = FALSE; // Now when i open the tap mantain status
+                    count = 50;     // Countdown start
+                }
+                else{
+                    t->tap = TRUE;
+                    count = 50;
+                }
+            }
+            //else      // Old version, leave open untill i'm clicking
+            // t->tap = FALSE;       
+        //else 
+        //  t->tap = FALSE;
 
-    if (t->tap && t->level>0)
-        pthread_cond_signal(&t->C_t);
+        if (t->tap && t->level>0)
+            pthread_cond_signal(&t->C_t);
 
-    pthread_mutex_unlock(&t->mutex);
-
-    }
+        pthread_mutex_unlock(&t->mutex);
+        }
+    if (count != 0)
+        count--;    // Cuntdown decrease
+}
 
 int get_level(struct tank_t *t){
     update_level(t);
@@ -204,12 +217,14 @@ void show_status(struct tank_t *t){
 
 // Function that increase desiderated level
 void increase_level(struct tank_t *t){
-    t->desired_level++;
+    if (t->desired_level != 300)    // In order to respect ranges
+        t->desired_level++;
 }
 
 // Function that decrease desiderated level
 void decrease_level(struct tank_t *t){
-    t->desired_level--;
+    if (t->desired_level != 0)  // In order to respect ranges
+        t->desired_level--;
 }
 
 // Function that check if user want to change desiderated lvl
@@ -246,7 +261,8 @@ void fill(struct tank_t *t){
 
     if (t->level<MAXLEVEL){ // if tank is full do not fill
         fill_pixel(t);      // refill
-        // update_level(t);
+        read_sensor(t);     // i update the sensor in order to avoid inconsistence
+        t->level = MAXLEVEL - t->sensor;
     }
 
     pthread_mutex_unlock(&t->mutex);
@@ -260,10 +276,11 @@ void empty(struct tank_t *t){
     
     if (t->level>MINLEVEL){
         empty_pixel(t);         //if tank is not empty do it
-        // update_level(t);
+        read_sensor(t);
+        t->level = MAXLEVEL - t->sensor;
     }
 
-    t->tap = FALSE;     // variable reset
+    // t->tap = FALSE;     // variable reset
 
     pthread_mutex_unlock(&t->mutex);
 }
@@ -308,7 +325,7 @@ void *th_sensor(void *arg){     //sensor task to evaluate quantity of liquid
     struct tank_t *t = &tank[(intptr_t)arg];
     
     while (1){
-        usleep(1000);   // 1 milisecond
+        usleep(3000);   // 3 milisecond
         update_level(t);
     }
 }

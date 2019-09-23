@@ -16,6 +16,7 @@
 #define Y1TANK      100 // Position of tank
 #define R           25  // Button radious 
 #define DESLVL      100 // Desired level
+#define COUNT       0   // Counter offset
 
 struct tank_t {     // Tank data structure
     pthread_mutex_t mutex;
@@ -27,6 +28,7 @@ struct tank_t {     // Tank data structure
     int tnum;           // id tank
     bool    tap;        // tap status
     int desired_level;  // desired level controlled by user
+    int count;          // offset counter
 }tank[N];
 
 struct button {     // Button data structure
